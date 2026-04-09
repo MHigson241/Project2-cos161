@@ -140,7 +140,7 @@ public class SingerAnalyzer {
 	 * @param input String of the lyrics
 	 * @return a Map<String, Integer> where the string is the word and the Integer is how often it occurs
 	 */
-	private static Map<String, Integer> getTermFrequency(String input){
+	public static Map<String, Integer> getTermFrequency(String input){
 		String cleanStr = input.toLowerCase().replaceAll("[^a-z0-9]", " ");
 		
 		String[] words = cleanStr.split("\\s+");
@@ -158,7 +158,7 @@ public class SingerAnalyzer {
 	 * 
 	 * @return Map<String, Integer>		A map of unique words and their respective IDF values
 	 */
-	private Map<String, Integer> getIDF()
+	public Map<String, Integer> getIDF()
 	{
 		Map<String, Integer> idfMap = new HashMap<>();
 		int n = titleLyricsMap.keySet().size();
