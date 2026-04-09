@@ -14,7 +14,9 @@ import java.util.Scanner;
  * exitCheck(T check)			Allows to check any data type to see if it is EXIT
  */
 public class UserInterface {
+	
 	public static ArrayList<String> queries = new ArrayList<String>();
+	
 	public static void main(String[] args) {
 		Scanner scnr = new Scanner(System.in);
 		int first = 0;

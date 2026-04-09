@@ -27,6 +27,8 @@ import java.util.*;
 public class SingerAnalyzer {
 	private Map<String, String> titleLyricsMap;
 	private Map<String, Map<String, Integer>> tf;
+	private Map<String, Integer> idf;
+	
 	/**Constructor
 	 * (imported from class activity-Iris)
 	 * 
@@ -37,6 +39,7 @@ public class SingerAnalyzer {
 	public SingerAnalyzer(String directoryPath) {
 		this.titleLyricsMap = SingerAnalyzer.readFiles(directoryPath);
 		this.tf = calculateTF();
+		this.idf = getIDF();
 	}
 	
 	/** for reading an individual file
@@ -88,6 +91,7 @@ public class SingerAnalyzer {
 	public List<String> search(String query, int k){ 
 		String cleanStr = query.toLowerCase().replaceAll("[^a-z0-9]", " ");
 		String[] queryTerms = cleanStr.split("\\s+");
+		
 		Map<String, Integer> songScore = new HashMap<String, Integer>();
 	
 		for(String song:tf.keySet()) {
@@ -95,7 +99,7 @@ public class SingerAnalyzer {
 			Map<String, Integer> currentTF = tf.get(song);
 			for(String queryTerm: queryTerms) {
 				if(currentTF.containsKey(queryTerm)) {
-					score +=currentTF.get(queryTerm);
+					score +=currentTF.get(queryTerm) * idf.get(queryTerm);
 				}
 				songScore.put(song, score);
 			}
@@ -144,6 +148,37 @@ public class SingerAnalyzer {
 		}
 		return frequencyMap;
 	}
+	
+	/**Get Inverse Document Frequency
+	 * (Maddy)
+	 * 
+	 * Loops over the lyrics of every song and adds the IDF value for each unique word to an IDF map
+	 * 
+	 * @return Map<String, Integer>		A map of unique words and their respective IDF values
+	 */
+	private Map<String, Integer> getIDF()
+	{
+		Map<String, Integer> idfMap = new HashMap<>();
+		int n = titleLyricsMap.keySet().size();
+		
+		for (String title : titleLyricsMap.keySet())
+		{
+			String cleanStr = titleLyricsMap.get(title).toLowerCase().replaceAll("[^a-z0-9]", " ");
+			String[] words = cleanStr.split("\\s+");
+			
+			for (String word : words)
+			{
+				if (!idfMap.keySet().contains(word))
+				{
+					int matchCount = 0;
+					for (String song : titleLyricsMap.keySet()) if (titleLyricsMap.get(song).contains(word)) matchCount++;
+					idfMap.put(word, n / matchCount);
+				}
+			}
+		}
+		return idfMap;
+	}
+	
 	/**for reading files
 	 * (imported from class activity-Iris)
 	 * 
