@@ -40,9 +40,9 @@ public class UserInterface {
 	 * @return		returns false once EXIT is entered
 	 */
 	public static boolean user(Scanner scnr, int first) {
-		String filePath = "C:\\Users\\Iris\\Downloads\\Taylor Swift";
+		String filePath = "C:\\Users\\Iris\\Downloads\\Copy of MoviePrefrence - Sheet1.tsv";
 		int k = 3;
-		//("C:\\Users\\Iris\\Downloads\\Taylor Swift")   - Saving my file path for testing
+		//("C:\\Users\\Iris\\Downloads\\song_lyrics.tsv")   - Saving my file path for testing
 		SingerAnalyzer analyzer = new SingerAnalyzer(filePath);
 		if(first == 0) {
 			System.out.println("Hello User! Please enter your name:");

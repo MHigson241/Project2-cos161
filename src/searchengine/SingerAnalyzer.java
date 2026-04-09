@@ -1,10 +1,11 @@
 package searchengine;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.FileNotFoundException;
+//import java.io.IOException;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 import java.util.*;
 
 /**SingerAnalyzer class
@@ -25,7 +26,7 @@ import java.util.*;
  * readFiles(String directoryPath)				for reading files
  */
 public class SingerAnalyzer {
-	private Map<String, String> titleLyricsMap;
+	private Map<String, Song> titleLyricsMap;
 	private Map<String, Map<String, Integer>> tf;
 	private Map<String, Integer> idf;
 	
@@ -42,21 +43,22 @@ public class SingerAnalyzer {
 		this.idf = getIDF();
 	}
 	
-	/** for reading an individual file
-	 * (imported from class activity-Iris)
-	 * 
-	 * @param filePath the location of the file
-	 * @return String with the lyrics of the file
-	 */
-	public static String readFile(String filePath) {
-		Path path = Paths.get(filePath);
-		try {
-			return Files.readString(path).strip();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
+//	/** for reading an individual file
+//	 * (imported from class activity-Iris)
+//	 * 
+//	 * @param filePath the location of the file
+//	 * @return String with the lyrics of the file
+//	 */
+//	public static String readFile(String filePath) {
+//		Path path = Paths.get(filePath);
+//		try {
+//			return Files.readString(path).strip();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return "";
+//	}
+	
 	/**orders the names of songs
 	 * (imported from class activity-Iris)
 	 * 
@@ -75,7 +77,7 @@ public class SingerAnalyzer {
 		Map<String, Map<String,Integer>> tf = new HashMap<String, Map<String, Integer>>();
 		
 		for(String songTitle: titleLyricsMap.keySet()) {
-			String lyrics = titleLyricsMap.get(songTitle);
+			String lyrics = titleLyricsMap.get(songTitle).getLyrics();
 			Map<String, Integer> currentTF = getTermFrequency(lyrics);
 			tf.put(songTitle, currentTF);
 		}
@@ -163,7 +165,7 @@ public class SingerAnalyzer {
 		
 		for (String title : titleLyricsMap.keySet())
 		{
-			String cleanStr = titleLyricsMap.get(title).toLowerCase().replaceAll("[^a-z0-9]", " ");
+			String cleanStr = titleLyricsMap.get(title).getLyrics().toLowerCase().replaceAll("[^a-z0-9]", " ");
 			String[] words = cleanStr.split("\\s+");
 			
 			for (String word : words)
@@ -171,34 +173,76 @@ public class SingerAnalyzer {
 				if (!idfMap.keySet().contains(word))
 				{
 					int matchCount = 0;
-					for (String song : titleLyricsMap.keySet()) if (titleLyricsMap.get(song).contains(word)) matchCount++;
-					idfMap.put(word, n / matchCount);
+					for (String song : titleLyricsMap.keySet()) 
+						if (titleLyricsMap.get(song).getLyrics().contains(word)) {
+							matchCount++;
+							idfMap.put(word, n / matchCount);
+						}
 				}
 			}
 		}
 		return idfMap;
 	}
-	
-	/**for reading files
-	 * (imported from class activity-Iris)
-	 * 
-	 * @param directoryPath Takes the path of the folder
-	 * @return Map<String, String> with the first string being the file name and the second being the lyrics
+	/**
+	 * @param directoryPath 	the file path of the tsv file
+	 * @return				Returns a Map<String, Song> in which the string is the songs name and the Song contains all the information of a song
 	 */
-	public static Map<String, String> readFiles(String directoryPath){
-		HashMap<String, String> songLyricsMap = new HashMap<String, String>();
-		File directory = new File(directoryPath);
-		//Get all files and directories in the folder
-		File[] files = directory.listFiles();
-		for(File file: files) {
-			if(file.isFile()) {
-				String fileName = file.getName();
-				String filePath = file.getAbsolutePath();
-				String lyrics = SingerAnalyzer.readFile(filePath);
-				// go
-				songLyricsMap.put(fileName.split("\\.")[0]/*removes the .txt at the end of the file name*/, lyrics);
-			}
-		}
+	public static Map<String, Song> readFiles(String directoryPath){
+		HashMap<String, Song> songLyricsMap = new HashMap<String, Song>();
+		try {
+            File file = new File(directoryPath);
+            Scanner scanner = new Scanner(file);
+            
+            // Skip the header line
+            if (scanner.hasNextLine()) {
+                scanner.nextLine();
+            }
+            
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("\t");
+                
+                if (parts.length >= 5) {
+                    String name = parts[0];
+                    String tag = parts[1];
+                    String artist = parts[2];
+                    String year = parts[3];
+                    String views = parts[4];
+                    String lyrics = parts[5].strip();
+                    Song currentSong = new Song(name, tag, artist, year, views, lyrics);
+                    songLyricsMap.put(name, currentSong);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found: " + directoryPath);
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing number from file");
+            e.printStackTrace();
+        }
 		return songLyricsMap;
 	}
+//	/**for reading files
+//	 * (imported from class activity-Iris)
+//	 * 
+//	 * @param directoryPath Takes the path of the folder
+//	 * @return Map<String, String> with the first string being the file name and the second being the lyrics
+//	 */
+//	public static Map<String, String> readFiles(String directoryPath){
+//		HashMap<String, String> songLyricsMap = new HashMap<String, String>();
+//		File directory = new File(directoryPath);
+//		//Get all files and directories in the folder
+//		File[] files = directory.listFiles();
+//		for(File file: files) {
+//			if(file.isFile()) {
+//				String fileName = file.getName();
+//				String filePath = file.getAbsolutePath();
+//				String lyrics = SingerAnalyzer.readFile(filePath);
+//				// go
+//				songLyricsMap.put(fileName.split("\\.")[0]/*removes the .txt at the end of the file name*/, lyrics);
+//			}
+//		}
+//		return songLyricsMap;
+//	}
 }
