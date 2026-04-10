@@ -17,7 +17,7 @@ public class UserInterface {
 	public static ArrayList<String> queries = new ArrayList<String>();
 	public static void main(String[] args) {
 		Scanner scnr = new Scanner(System.in);
-		String filePath = "C:\\Users\\Eris Nyx\\Downloads\\song_lyrics (1).tsv";
+		String filePath = "C:\\Users\\dhigs\\Desktop\\Eclipse Workspace\\Project2-cos161\\src\\searchengine\\song_lyrics.tsv";
 		//("C:\\Users\\Iris\\Downloads\\song_lyrics.tsv")   - Saving my file path for testing
 		//("C:\\Users\\Eris Nyx\\Downloads\\song_lyrics (1).tsv") saving more file paths
 		ArrayList<Song> s = SingerAnalyzer.loadFile(filePath);

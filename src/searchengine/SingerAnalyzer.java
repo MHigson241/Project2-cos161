@@ -27,6 +27,7 @@ public class SingerAnalyzer {
 	private Map<String, Song> titleLyricsMap;
 	private Map<String, Map<String, Integer>> tf;
 	private Map<String, Integer> idf;
+	private Map<String, Integer> titleIDF;
 	
 	/**Constructor
 	 * (imported from class activity-Iris)
@@ -37,11 +38,9 @@ public class SingerAnalyzer {
 	 */
 	public SingerAnalyzer(ArrayList<Song> songs) {
 		this.titleLyricsMap = readFiles(songs);
-		//System.out.println("map of lyrics all set");
 		this.tf = calculateTF();
-		//System.out.println("tf all set");
 		this.idf = getIDFTry2();
-		//System.out.println("idf all set");
+		this.titleIDF = getTitleIDF();
 	}	
 	/** to save each songs frequency map
 	 * (imported from class activity-Iris)
@@ -49,6 +48,7 @@ public class SingerAnalyzer {
 	 * @return map<String, Map<String,Integer>> where the String is the song name and the Map<STring, Integer> is the frequency data
 	 */
 	private Map<String, Map<String,Integer>> calculateTF(){
+		System.out.println("Creating TF Map...");
 		Map<String, Map<String,Integer>> tf = new HashMap<String, Map<String, Integer>>();
 		
 		for(String songTitle: titleLyricsMap.keySet()) {
@@ -56,11 +56,12 @@ public class SingerAnalyzer {
 			Map<String, Integer> currentTF = getTermFrequency(lyrics);
 			tf.put(songTitle, currentTF);
 		}
+		System.out.println("TF Map done");
 		return tf;
 	}
 	
 	/**searching for relevant songs
-	 * (imported from class activity-Iris)
+	 * (imported from class activity-Iris, edited by Maddy to account for lyric IDF and title IDF)
 	 * 
 	 * @param query the set of words as a string we are looking for
 	 * @return 
@@ -76,7 +77,7 @@ public class SingerAnalyzer {
 			Map<String, Integer> currentTF = tf.get(song);
 			for(String queryTerm: queryTerms) {
 				if(currentTF.containsKey(queryTerm)) {
-					score +=currentTF.get(queryTerm) * idf.get(queryTerm);
+					score +=currentTF.get(queryTerm) * ((titleIDF.get(queryTerm) * 2) + idf.get(queryTerm));
 				}
 				songScore.put(song, score);
 			}
@@ -202,6 +203,7 @@ public class SingerAnalyzer {
 	 * @return Map<String, Integer>		A map of unique words and their respective IDF values
 	 */
 	public Map<String, Integer> getIDFTry2() {
+		System.out.println("Creating IDF Map...");
 	    Map<String, Integer> idfMap = new HashMap<>();
 	    Map<String, Integer> dfMap = new HashMap<>(); // term -> number of songs containing it
 	    int n = titleLyricsMap.size();
@@ -226,8 +228,31 @@ public class SingerAnalyzer {
 	        int df = dfMap.get(term);
 	        idfMap.put(term, n / df);
 	    }
-
+	    System.out.println("IDF Map done");
 	    return idfMap;
+	}
+	
+	public Map<String, Integer> getTitleIDF()
+	{
+		System.out.println("Creating Title IDF Map...");
+		Map<String, Integer> idfMap = new HashMap<>();
+		Map<String, Integer> dfMap = new HashMap<>();
+		int n = titleLyricsMap.size();
+		
+		for (String title : titleLyricsMap.keySet())
+		{
+			String cleanStr = title.toLowerCase().replaceAll("[^a-z0-9]", " ");
+			String[] words = cleanStr.split("\\s+");
+			
+			Set<String> uniqueTerms = new HashSet<>();
+	        for (String word : words) if (!word.isEmpty()) uniqueTerms.add(word);
+
+	        for (String term : uniqueTerms) dfMap.put(term, dfMap.getOrDefault(term, 0) + 1);
+		}
+		for (String term : dfMap.keySet()) idfMap.put(term, n / dfMap.get(term));
+		
+		System.out.println("Title IDF Map done");
+		return idf;
 	}
 
 	/**for loading the file
@@ -237,6 +262,7 @@ public class SingerAnalyzer {
 	 * @return returns a array list of type song
 	 */
 	public static ArrayList<Song>  loadFile(String directoryPath) {
+		System.out.println("Loading file...");
 		ArrayList<Song >songInfo = new ArrayList<>();
 		int count = 300000;
 		try {
@@ -272,6 +298,7 @@ public class SingerAnalyzer {
             System.out.println("Error parsing number from file");
             e.printStackTrace();
         }
+		System.out.println("File loaded");
 		return songInfo;
 
 	}

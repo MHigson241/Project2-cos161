@@ -7,7 +7,7 @@ public class SearchSimulation {
 	public static long start;
 	public static long end;
 	public static void main(String[] args) {
-		ArrayList<Song> s = SingerAnalyzer.loadFile("C:\\Users\\Eris Nyx\\Downloads\\song_lyrics (1).tsv");
+		ArrayList<Song> s = SingerAnalyzer.loadFile("C:\\Users\\dhigs\\Desktop\\Eclipse Workspace\\Project2-cos161\\src\\searchengine\\song_lyrics.tsv");
 		//("C:\\Users\\Iris\\Downloads\\song_lyrics.tsv")   - Saving my file path for testing
 		//("C:\\Users\\Eris Nyx\\Downloads\\song_lyrics (1).tsv") saving more file paths
 		System.out.println("file loaded! :3");
