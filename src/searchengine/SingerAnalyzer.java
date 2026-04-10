@@ -61,7 +61,7 @@ public class SingerAnalyzer {
 	}
 	
 	/**searching for relevant songs
-	 * (imported from class activity-Iris, edited by Maddy to account for lyric IDF and title IDF)
+	 * (imported from class activity-Iris, edited by Maddy to account for lyric IDF and weighted title IDF)
 	 * 
 	 * @param query the set of words as a string we are looking for
 	 * @return 
@@ -232,25 +232,40 @@ public class SingerAnalyzer {
 	    return idfMap;
 	}
 	
+	/**Get Title Inverse Document Frequency
+	 * (Maddy)
+	 * 
+	 * Loops over the words of every song title and adds the IDF value for each unique word to an IDF map
+	 * (For weighing title matches higher than lyric matches)
+	 * 
+	 * @return Map<String, Integer>		A map of unique words and their respective IDF values (From titles only)
+	 */
 	public Map<String, Integer> getTitleIDF()
 	{
 		System.out.println("Creating Title IDF Map...");
-		Map<String, Integer> idfMap = new HashMap<>();
-		Map<String, Integer> dfMap = new HashMap<>();
-		int n = titleLyricsMap.size();
 		
+		Map<String, Integer> idfMap = new HashMap<>();	//Map to hold final result
+		Map<String, Integer> dfMap = new HashMap<>();	//Words with the number of documents that have that word in their title
+		int n = titleLyricsMap.size();					//The total number of songs
+		
+		//Loop over each song
 		for (String title : titleLyricsMap.keySet())
 		{
+			//Clean and split the song title
 			String cleanStr = title.toLowerCase().replaceAll("[^a-z0-9]", " ");
 			String[] words = cleanStr.split("\\s+");
 			
+			//Get a set of only unique words
 			Set<String> uniqueTerms = new HashSet<>();
 	        for (String word : words) if (!word.isEmpty()) uniqueTerms.add(word);
 
+	        //Loop over each unique word and count the number of songs that have that word in the title
 	        for (String term : uniqueTerms) dfMap.put(term, dfMap.getOrDefault(term, 0) + 1);
 		}
+		//Calculate final IDF value for each word (total number of songs / the number of songs that have that word in their title)
 		for (String term : dfMap.keySet()) idfMap.put(term, n / dfMap.get(term));
 		
+		//Return final titleIDF map
 		System.out.println("Title IDF Map done");
 		return idf;
 	}
