@@ -17,15 +17,22 @@ public class UserInterface {
 	public static ArrayList<String> queries = new ArrayList<String>();
 	public static void main(String[] args) {
 		Scanner scnr = new Scanner(System.in);
+		String filePath = "C:\\Users\\Eris Nyx\\Downloads\\song_lyrics (1).tsv";
+		//("C:\\Users\\Iris\\Downloads\\song_lyrics.tsv")   - Saving my file path for testing
+		//("C:\\Users\\Eris Nyx\\Downloads\\song_lyrics (1).tsv") saving more file paths
+		ArrayList<Song> s = SingerAnalyzer.loadFile(filePath);
+		SingerAnalyzer analyzer = new SingerAnalyzer(s);
 		int first = 0;
 		int count = 0;
-		while(user(scnr, first) == true) {
+		while(user(scnr, first, analyzer) == true) {
 			first++;
 		}
 		System.out.println("Here are your queries: ");
-		for(String pQuery: queries) {
-			System.out.println("\t" + pQuery);
-			count++;
+		if(queries.size()> 0) {
+			for(String pQuery: queries) {
+				System.out.println("\t" + pQuery);
+				count++;
+			}
 		}
 		System.out.println("You had " + count + " queries.");
 		System.out.println("Goodbye! :3");
@@ -37,12 +44,8 @@ public class UserInterface {
 	 * @param first	is used to check if we need to ask for the persons name
 	 * @return		returns false once EXIT is entered
 	 */
-	public static boolean user(Scanner scnr, int first) {
-		String filePath = "C:\\Users\\Iris\\Downloads\\song_lyrics.tsv";
+	public static boolean user(Scanner scnr, int first, SingerAnalyzer analyzer) {
 		int k = 3;
-		//("C:\\Users\\Iris\\Downloads\\song_lyrics.tsv")   - Saving my file path for testing
-		//("C:\\Users\\Iris\\Downloads\\Copy of MoviePrefrence - Sheet1.tsv")  	-saving test tsv filepath
-		SingerAnalyzer analyzer = new SingerAnalyzer(filePath);
 		if(first == 0) {
 			System.out.println("Hello User! Please enter your name:");
 			String name = scnr.next();
@@ -50,6 +53,7 @@ public class UserInterface {
 		}
 		System.out.println("To start a query enter the number of results you want to get up to 5.");
 		System.out.println("To end your query at any time type in all caps EXIT.");
+		//gets the number of responses sought
 		if (scnr.hasNextInt()) {
 			 k = scnr.nextInt();
 		}else {
@@ -58,6 +62,7 @@ public class UserInterface {
 				return false;
 			}
 		}
+		//searches for the term being looked for
 		if(k <= 5 && k > 0) {
 			System.out.println("Please enter the term you want to search for: ");
 			String term = scnr.next();
@@ -66,7 +71,7 @@ public class UserInterface {
 			}
 			queries.add(term);
 			System.out.println(analyzer.search(term, k));
-			System.out.println("---------------------------------");
+			System.out.println("____________________________\t");
 		}else {
 			System.out.println("Error: pleas enter a valid number between 1 and 5.");
 		}

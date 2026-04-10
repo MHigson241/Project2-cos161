@@ -17,12 +17,11 @@ import java.util.*;
  * 
  * Methods:
  * SingerAnalyzer(String directoryPath)			creates an object of singer analyzer
- * getSongsOrdered() 							orders the names of songs
  * calculateTF()									to save each songs tf to a map
  * search(String query)							searching for relevant songs
  * topK(Map<String, Integer> songScore, int k)	finding the top k songs
  * getTermFrequency(String input)				for figuring out how often a term occurs in one song
- * readFiles(String directoryPath)				for reading the tsv file
+ * loadFile(String directoryPath) 				for reading the tsv file to an arraylist
  */
 public class SingerAnalyzer {
 	private Map<String, Song> titleLyricsMap;
@@ -36,37 +35,14 @@ public class SingerAnalyzer {
 	 * 
 	 * @param directoryPath directory where file lyrics live
 	 */
-	public SingerAnalyzer(String directoryPath) {
-		this.titleLyricsMap = SingerAnalyzer.readFiles(directoryPath);
+	public SingerAnalyzer(ArrayList<Song> songs) {
+		this.titleLyricsMap = readFiles(songs);
+		//System.out.println("map of lyrics all set");
 		this.tf = calculateTF();
-		this.idf = getIDF();
-	}
-	
-//	/** for reading an individual file
-//	 * (imported from class activity-Iris)
-//	 * 
-//	 * @param filePath the location of the file
-//	 * @return String with the lyrics of the file
-//	 */
-//	public static String readFile(String filePath) {
-//		Path path = Paths.get(filePath);
-//		try {
-//			return Files.readString(path).strip();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		return "";
-//	}
-	
-	/**orders the names of songs
-	 * (imported from class activity-Iris)
-	 * 
-	 * @return TreeSet<String>  with the name of the songs
-	 */
-	public Set<String> getSongsOrdered() {		
-		return new TreeSet<String>(this.titleLyricsMap.keySet());
-	}
-	
+		//System.out.println("tf all set");
+		this.idf = getIDFTry2();
+		//System.out.println("idf all set");
+	}	
 	/** to save each songs frequency map
 	 * (imported from class activity-Iris)
 	 * 
@@ -157,39 +133,111 @@ public class SingerAnalyzer {
 	 * 
 	 * @return Map<String, Integer>		A map of unique words and their respective IDF values
 	 */
-	public Map<String, Integer> getIDF()
-	{
-		Map<String, Integer> idfMap = new HashMap<>();
-		int n = titleLyricsMap.keySet().size();
-		
-		for (String title : titleLyricsMap.keySet())
-		{
-			String cleanStr = titleLyricsMap.get(title).getLyrics().toLowerCase().replaceAll("[^a-z0-9]", " ");
-			String[] words = cleanStr.split("\\s+");
-			
-			for (String word : words)
-			{
-				if (!idfMap.keySet().contains(word))
-				{
-					int matchCount = 0;
-					for (String song : titleLyricsMap.keySet()) 
-						if (titleLyricsMap.get(song).getLyrics().contains(word)) {
-							matchCount++;
-							idfMap.put(word, n / matchCount);
-						}
-				}
-			}
-		}
-		return idfMap;
-	}
-	/**For reading the tsv file
+//	public Map<String, Integer> getIDF()
+//	{
+//		Map<String, Integer> idfMap = new HashMap<>();
+//		int n = titleLyricsMap.keySet().size();
+//		for (String title : titleLyricsMap.keySet())
+//		{
+//			String cleanStr = titleLyricsMap.get(title).getLyrics().toLowerCase().replaceAll("[^a-z0-9]", " ");
+//			String[] words = cleanStr.split("\\s+");
+//			
+//			for (String word : words)
+//			{
+//				if (!idfMap.keySet().contains(word))
+//				{
+//					int matchCount = 0;
+//					for (String song : titleLyricsMap.keySet()) 
+//						if (titleLyricsMap.get(song).getLyrics().contains(word)) {
+//							matchCount++;
+//							idfMap.put(word, n / matchCount);
+//						}
+//				}
+//			}
+//		}
+//		return idfMap;
+//	}
+	/**Get Inverse Document Frequency
 	 * (Iris)
 	 * 
-	 * @param directoryPath 	the file path of the tsv file
-	 * @return				Returns a Map<String, Song> in which the string is the songs name and the Song contains all the information of a song
+	 * Loops over the lyrics of every song and adds the IDF value for each unique word to an IDF map
+	 * 
+	 * @return Map<String, Integer>		A map of unique words and their respective IDF values
 	 */
-	public static Map<String, Song> readFiles(String directoryPath){
-		HashMap<String, Song> songLyricsMap = new HashMap<String, Song>();
+//	public Map<String, Integer> getIDFTry(){
+//		Map<String, Integer> idfMap = new HashMap<>();
+//		Set<String> uniqueTerms = new HashSet<>();
+//		int n = titleLyricsMap.size();
+//		LinkedList<Integer> df = new  LinkedList<Integer>();
+//		int dfCount = 0;
+//		//ensures no dupes in our idf map
+//		for (String title : titleLyricsMap.keySet()){
+//			String cleanStr = titleLyricsMap.get(title).getLyrics().toLowerCase().replaceAll("[^a-z0-9]", " ");
+//			String[] words = cleanStr.split("\\s+");
+//			for(int i = 0; i < words.length -1; i++) {
+//				uniqueTerms.add(words[i]);
+//			}
+//			//finds number of lyrics containing term
+//			int matchCount = 0;
+//			for(String term: uniqueTerms) {
+//				if(titleLyricsMap.get(title).getLyrics().contains(term)) {
+//					matchCount++;
+//				}
+//			}
+//			df.add(matchCount);
+//		}
+//		System.out.println("unique terms found");
+//		//calcs idf now that have 
+//		for(String term: uniqueTerms) {
+//			idfMap.put(term, n / df.get(dfCount));
+//			dfCount++;
+//		}
+//		return idfMap;
+//	}
+	/**Get Inverse Document Frequency
+	 * (Maddy and Iris)
+	 * 
+	 * Loops over the lyrics of every song and adds the IDF value for each unique word to an IDF map
+	 * 
+	 * @return Map<String, Integer>		A map of unique words and their respective IDF values
+	 */
+	public Map<String, Integer> getIDFTry2() {
+	    Map<String, Integer> idfMap = new HashMap<>();
+	    Map<String, Integer> dfMap = new HashMap<>(); // term -> number of songs containing it
+	    int n = titleLyricsMap.size();
+	    // Loop through each song
+	    for (String title : titleLyricsMap.keySet()) {
+	        String cleanStr = titleLyricsMap.get(title).getLyrics().toLowerCase().replaceAll("[^a-z0-9]", " ");
+	        String[] words = cleanStr.split("\\s+");
+	        // Unique terms for THIS song only
+	        Set<String> uniqueTerms = new HashSet<>();
+	        for (String word : words) {
+	            if (!word.isEmpty()) {
+	                uniqueTerms.add(word);
+	            }
+	        }
+	        // Update document frequency (DF)
+	        for (String term : uniqueTerms) {
+	            dfMap.put(term, dfMap.getOrDefault(term, 0) + 1);
+	        }
+	    }
+	    // Compute IDF = totalSongs / documentFrequency
+	    for (String term : dfMap.keySet()) {
+	        int df = dfMap.get(term);
+	        idfMap.put(term, n / df);
+	    }
+
+	    return idfMap;
+	}
+
+	/**for loading the file
+	 * (Iris)
+	 * 
+	 * @param directoryPath the path of the file
+	 * @return returns a array list of type song
+	 */
+	public static ArrayList<Song>  loadFile(String directoryPath) {
+		ArrayList<Song >songInfo = new ArrayList<>();
 		int count = 300000;
 		try {
             File file = new File(directoryPath);
@@ -212,7 +260,7 @@ public class SingerAnalyzer {
                     String views = parts[4];
                     String lyrics = parts[5].strip();
                     Song currentSong = new Song(name, tag, artist, year, views, lyrics);
-                    songLyricsMap.put(name, currentSong);
+                    songInfo.add(currentSong);
                 }
                 count--;
             }
@@ -224,28 +272,20 @@ public class SingerAnalyzer {
             System.out.println("Error parsing number from file");
             e.printStackTrace();
         }
+		return songInfo;
+
+	}
+	/**For making a map of the song and name
+	 * (Iris)
+	 * 
+	 * @param songs 	the arraylist of type song
+	 * @return				Returns a Map<String, Song> in which the string is the songs name and the Song contains all the information of a song
+	 */
+	public static Map<String, Song> readFiles(ArrayList<Song> songs){
+		HashMap<String, Song> songLyricsMap = new HashMap<String, Song>();
+		for(Song s: songs) {
+			songLyricsMap.put(s.getName(), s);
+		}
 		return songLyricsMap;
 	}
-//	/**for reading files
-//	 * (imported from class activity-Iris)
-//	 * 
-//	 * @param directoryPath Takes the path of the folder
-//	 * @return Map<String, String> with the first string being the file name and the second being the lyrics
-//	 */
-//	public static Map<String, String> readFiles(String directoryPath){
-//		HashMap<String, String> songLyricsMap = new HashMap<String, String>();
-//		File directory = new File(directoryPath);
-//		//Get all files and directories in the folder
-//		File[] files = directory.listFiles();
-//		for(File file: files) {
-//			if(file.isFile()) {
-//				String fileName = file.getName();
-//				String filePath = file.getAbsolutePath();
-//				String lyrics = SingerAnalyzer.readFile(filePath);
-//				// go
-//				songLyricsMap.put(fileName.split("\\.")[0]/*removes the .txt at the end of the file name*/, lyrics);
-//			}
-//		}
-//		return songLyricsMap;
-//	}
 }
