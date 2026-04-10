@@ -17,13 +17,12 @@ import java.util.*;
  * 
  * Methods:
  * SingerAnalyzer(String directoryPath)			creates an object of singer analyzer
- * readFile(String filePath)						for reading an individual file
  * getSongsOrdered() 							orders the names of songs
  * calculateTF()									to save each songs tf to a map
  * search(String query)							searching for relevant songs
  * topK(Map<String, Integer> songScore, int k)	finding the top k songs
  * getTermFrequency(String input)				for figuring out how often a term occurs in one song
- * readFiles(String directoryPath)				for reading files
+ * readFiles(String directoryPath)				for reading the tsv file
  */
 public class SingerAnalyzer {
 	private Map<String, Song> titleLyricsMap;
@@ -183,12 +182,15 @@ public class SingerAnalyzer {
 		}
 		return idfMap;
 	}
-	/**
+	/**For reading the tsv file
+	 * (Iris)
+	 * 
 	 * @param directoryPath 	the file path of the tsv file
 	 * @return				Returns a Map<String, Song> in which the string is the songs name and the Song contains all the information of a song
 	 */
 	public static Map<String, Song> readFiles(String directoryPath){
 		HashMap<String, Song> songLyricsMap = new HashMap<String, Song>();
+		int count = 300000;
 		try {
             File file = new File(directoryPath);
             Scanner scanner = new Scanner(file);
@@ -198,7 +200,7 @@ public class SingerAnalyzer {
                 scanner.nextLine();
             }
             
-            while (scanner.hasNextLine()) {
+            while (scanner.hasNextLine() && count > 0) {
                 String line = scanner.nextLine();
                 String[] parts = line.split("\t");
                 
@@ -212,6 +214,7 @@ public class SingerAnalyzer {
                     Song currentSong = new Song(name, tag, artist, year, views, lyrics);
                     songLyricsMap.put(name, currentSong);
                 }
+                count--;
             }
             scanner.close();
         } catch (FileNotFoundException e) {
